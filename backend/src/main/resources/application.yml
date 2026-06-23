@@ -1,0 +1,89 @@
+# 服务端配置
+server:
+  # 后端服务启动端口，浏览器访问接口时使用这个端口
+  port: 8888
+
+# Spring Boot 相关配置
+spring:
+  # 应用基础信息
+  application:
+    # 应用名称，启动日志和部分监控信息会显示这个名字
+    name: car-rental-system-backend
+
+  # MySQL 数据源配置
+  datasource:
+    # MySQL 8 驱动类
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 数据库连接地址：本机 3306 端口，数据库名 car_rental_system
+    url: jdbc:mysql://localhost:3306/car_rental_system?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    # 数据库用户名
+    username: ${MYSQL_USERNAME:root}
+    # 数据库密码，从环境变量 MYSQL_PASSWORD 读取，避免把本机密码提交到公开仓库
+    password: ${MYSQL_PASSWORD:}
+
+  # Redis 配置
+  data:
+    redis:
+      # Redis 服务地址
+      host: 127.0.0.1
+      # Redis 服务端口
+      port: 6379
+      # 使用 Redis 的 0 号数据库
+      database: 0
+      # Redis 连接超时时间
+      connect-timeout: 10000ms
+
+  # Jackson JSON 序列化配置
+  jackson:
+    # Date 类型转 JSON 时的日期格式
+    date-format: yyyy-MM-dd
+    # JSON 时间时区，避免时间差 8 小时
+    time-zone: Asia/Shanghai
+
+  # Spring MVC 配置
+  mvc:
+    # Controller 接收日期参数时使用的格式
+    format:
+      # 日期格式，例如 2026-06-22
+      date: yyyy-MM-dd
+      # 日期时间格式，例如 2026-06-22 15:30:00
+      date-time: yyyy-MM-dd HH:mm:ss
+
+    # 路径匹配策略配置
+    pathmatch:
+      # 使用 Ant 风格路径匹配，常用于兼容 Springfox Swagger
+      matching-strategy: ant_path_matcher
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  # MyBatis 原生配置
+  configuration:
+    # 控制台打印 SQL，方便开发时查看执行的 SQL 语句
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 数据库下划线字段自动映射为 Java 驼峰属性，例如 user_name -> userName
+    map-underscore-to-camel-case: true
+
+  # MyBatis-Plus 全局配置
+  global-config:
+    db-config:
+      # 主键策略：数据库自增
+      id-type: auto
+      # 逻辑删除字段名，表中有 deleted 字段时会用于逻辑删除
+      logic-delete-field: deleted
+
+  # Mapper XML 文件扫描路径
+  mapper-locations: classpath*:mapper/**/*.xml
+
+  #给 com.gjq.entity 包下的实体类自动起别名
+  type-aliases-package: com.gjq.entity
+
+# 密码加密配置
+encoder:
+  ctype:
+    # BCrypt 加密强度，数值越大越安全，但加密和校验越慢
+    strength: 6
+    # 生成 BCrypt 随机盐时使用的随机种子
+    secret: ${random.uuid}
+
+request:
+  login-url: /rental/user/login
