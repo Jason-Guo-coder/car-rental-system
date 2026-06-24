@@ -12,6 +12,9 @@ target/
 node_modules/
 dist/
 
+# Local runtime files
+.runtime/
+
 # Local study notes
 /车辆租赁管理系统.md
 /项目学习日志.md

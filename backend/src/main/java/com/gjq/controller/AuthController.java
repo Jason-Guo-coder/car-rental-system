@@ -7,7 +7,6 @@ import cn.hutool.jwt.JWTPayload;
 import com.gjq.entity.Permission;
 import com.gjq.security.CustomerAuthenticationException;
 import com.gjq.entity.User;
-import com.gjq.service.IUserService;
 import com.gjq.utils.JwtUtils;
 import com.gjq.utils.RedisUtils;
 import com.gjq.utils.Result;
@@ -17,9 +16,11 @@ import com.gjq.vo.TokenVO;
 import com.gjq.vo.UserInfoVO;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,9 +37,6 @@ public class AuthController {
 
     @Resource
     private RedisUtils redisUtils;
-
-    @Resource
-    private IUserService userService;
 
     @PostMapping("/refreshToken")
     public Result refreshToken(HttpServletRequest request){
@@ -89,7 +87,7 @@ public class AuthController {
      * 获取当前登录用户信息。
      * <p>
      * VerifyTokenFilter 校验 token 通过后，会把当前用户放到 SecurityContextHolder，
-     * 这里再从上下文中取出用户，并查询用户角色返回给前端。
+     * 这里再从上下文中取出用户，并把用户拥有的权限编码返回给前端。
      */
     @GetMapping("/info")
     public Result getUserInfo(){
@@ -100,15 +98,18 @@ public class AuthController {
         }
 
         User user = (User) authentication.getPrincipal();
-        List<String> list = userService.selectRoleName(user.getId());
-        Object[] array = list.toArray();
+        List<Permission> permissionList = user.getPermissionList();
+        Object[] array = permissionList.stream()
+                .filter(Objects::nonNull)
+                .map(Permission::getPermissionCode)
+                .toArray();
 
         UserInfoVO userInfoVo = new UserInfoVO(user.getId(), user.getUsername(),
                 user.getAvatar(), user.getNickname(), array);
         return Result.success(userInfoVo).setMessage("获取用户信息成功");
     }
 
-    @GetMapping("menuList")
+    @GetMapping("/menuList")
     public Result getMenuList(){
 
         //获取当前用户信息
@@ -126,5 +127,22 @@ public class AuthController {
         permissionList.removeIf(permission -> Objects.equals(permission.getPermissionType(), 2));
         List<RouteVO> routeVOList = RouteTreeUtils.buildRouteTree(permissionList, 0);
         return Result.success(routeVOList).setMessage("获取菜单列表成功");
+    }
+
+    @PostMapping("/logout")
+    public Result logout(HttpServletRequest request, HttpServletResponse response){
+        String token = request.getHeader("token");
+        if (StrUtil.isEmpty(token)){
+            token=request.getParameter("token");
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication!=null){
+            //用户一旦登出系统，则清除redis中的token
+            redisUtils.del("token:"+token);
+            SecurityContextLogoutHandler handler = new SecurityContextLogoutHandler();
+            handler.logout(request,response,authentication);
+            return Result.success().setMessage("登出成功");
+        }
+        return Result.fail().setMessage("登出失败");
     }
 }

@@ -1,5 +1,6 @@
 package com.gjq.vo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,7 @@ public class RouteVO {
     private Boolean alwaysShow;
 
     private Meta meta;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<RouteVO> children;
 
     @Data

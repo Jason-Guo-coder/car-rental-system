@@ -1,5 +1,6 @@
 package com.gjq.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gjq.entity.AutoMaker;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IAutoMakerService extends IService<AutoMaker> {
 
+    Page<AutoMaker> search(int start, int size, AutoMaker autoMaker);
 }
