@@ -32,6 +32,11 @@ public class AutoMakerController {
         return Result.success(page);
     }
 
+    @GetMapping
+    public Result selectAll() {
+        return Result.success(autoMakerService.list());
+    }
+
     @DeleteMapping("/{ids}") //1,2,3
     public Result delete(@PathVariable String ids) {
         List<Integer> list = Arrays.stream(ids.split(",")).map(Integer::parseInt).toList();

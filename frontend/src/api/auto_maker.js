@@ -4,6 +4,9 @@ export default {
   async search(start, size, data) {
     return await requestHttp.post(`/rental/autoMaker/${start}/${size}`, data)
   },
+  async selectAll() {
+    return await requestHttp.get('/rental/autoMaker')
+  },
   async delete(id) {
     return await requestHttp.delete(`/rental/autoMaker/${id}`)
   },

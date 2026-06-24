@@ -2,6 +2,7 @@ package com.gjq.utils;
 
 import com.gjq.entity.Permission;
 import com.gjq.vo.RouteVO;
+import org.springframework.beans.BeanUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,5 +50,38 @@ public class RouteTreeUtils {
                 });
 
         return routeVoList;
+    }
+
+    public static List<Permission> buildMenuTree(List<Permission> list,int parentId){
+        List<Permission> menuList = new ArrayList<>();
+
+        // 如果权限列表为空，则说明数据库没有查到菜单数据，直接返回空树。
+        if (list == null || list.isEmpty()) {
+            return menuList;
+        }
+
+        for (Permission permission : list) {
+            // 如果当前权限为空，或者没有父级权限 id，则说明这条数据不完整，跳过不处理。
+            if (permission == null || permission.getPid() == null) {
+                continue;
+            }
+
+            // 如果当前权限的 pid 不等于 parentId，则说明它不是当前父级菜单的直属子菜单，跳过。
+            if (!permission.getPid().equals(parentId)) {
+                continue;
+            }
+
+            Permission menu = new Permission();
+            BeanUtils.copyProperties(permission, menu);
+
+            // 递归查找当前菜单下面的子菜单。
+            List<Permission> children = buildMenuTree(list, permission.getId());
+            menu.setChildren(children);
+
+            menuList.add(menu);
+        }
+
+        return menuList;
+
     }
 }

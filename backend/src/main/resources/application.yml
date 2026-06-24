@@ -1,30 +1,22 @@
 # 服务端配置
 server:
-  # 后端服务启动端口，浏览器访问接口时使用这个端口
   port: 8888
 
-# Spring Boot 相关配置
 spring:
   # 应用基础信息
   application:
     # 应用名称，启动日志和部分监控信息会显示这个名字
     name: car-rental-system-backend
 
-  # MySQL 数据源配置
   datasource:
-    # MySQL 8 驱动类
     driver-class-name: com.mysql.cj.jdbc.Driver
-    # 数据库连接地址：本机 3306 端口，数据库名 car_rental_system
     url: jdbc:mysql://localhost:3306/car_rental_system?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    # 数据库用户名
     username: ${MYSQL_USERNAME:root}
-    # 数据库密码，从环境变量 MYSQL_PASSWORD 读取，避免把本机密码提交到公开仓库
     password: ${MYSQL_PASSWORD:}
 
   # Redis 配置
   data:
     redis:
-      # Redis 服务地址
       host: 127.0.0.1
       # Redis 服务端口
       port: 6379
@@ -44,9 +36,7 @@ spring:
   mvc:
     # Controller 接收日期参数时使用的格式
     format:
-      # 日期格式，例如 2026-06-22
       date: yyyy-MM-dd
-      # 日期时间格式，例如 2026-06-22 15:30:00
       date-time: yyyy-MM-dd HH:mm:ss
 
     # 路径匹配策略配置
