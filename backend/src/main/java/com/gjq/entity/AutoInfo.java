@@ -90,4 +90,22 @@ public class AutoInfo implements Serializable {
 
     @ApiModelProperty("是否删除")
     private Boolean deleted;
+
+    @TableField(exist = false)
+    private String makerName;
+
+    @TableField(exist = false)
+    private String brandName;
+
+    @TableField(exist = false)
+    private LocalDate lowRegistrationDate;
+
+    @TableField(exist = false)
+    private LocalDate highRegistrationDate;
+
+    @TableField(exist = false)
+    private Double lowRent;
+
+    @TableField(exist = false)
+    private Double highRent;
 }

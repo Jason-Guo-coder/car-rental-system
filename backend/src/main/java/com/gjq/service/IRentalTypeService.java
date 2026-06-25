@@ -1,5 +1,6 @@
 package com.gjq.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gjq.entity.RentalType;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,4 +14,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IRentalTypeService extends IService<RentalType> {
 
+    Object searchByPage(Page<RentalType> page, RentalType rentalType);
+
+    boolean delete(String ids);
 }

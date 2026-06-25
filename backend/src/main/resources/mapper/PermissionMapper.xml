@@ -21,4 +21,11 @@
         where u.id = #{id}
         order by p.id,p.order_num
     </select>
+    <select id="selectPermissionListByRoleId" resultType="com.gjq.entity.Permission">
+        select *
+        from sys_permission p
+        inner join sys_role_permission rp on rp.permission_id = p.id
+        where rp.role_id = #{roleId}
+        order by p.order_num
+    </select>
 </mapper>

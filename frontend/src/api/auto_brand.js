@@ -12,5 +12,9 @@ export default {
   },
   async update(data) {
     return await requestHttp.put('/rental/autoBrand', data)
+  },
+  // 按厂商id查询品牌（二级联动）
+  async selectByMakerId(makerId) {
+    return await requestHttp.get(`/rental/autoBrand/maker/${makerId}`)
   }
 }

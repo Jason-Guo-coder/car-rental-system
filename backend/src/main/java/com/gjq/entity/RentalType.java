@@ -38,7 +38,13 @@ public class RentalType implements Serializable {
     private String typeName;
 
     @ApiModelProperty("享受折扣")
-    private Double typeDiscout;
+    private Double typeDiscount;
+
+    @TableField(exist = false)
+    private Double lowDiscount;
+
+    @TableField(exist = false)
+    private Double highDiscount;
 
     @ApiModelProperty("备注")
     private String remark;

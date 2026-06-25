@@ -34,6 +34,9 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements IR
     private UserMapper userMapper;
 
     @Resource
+    private RoleMapper roleMapper;
+
+    @Resource
     private UserRoleMapper userRoleMapper;
 
     @Resource
@@ -55,7 +58,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements IR
             queryWrapper.eq("creater_id", userId);
         }
 
-        return baseMapper.selectPage(page, queryWrapper);
+        return roleMapper.selectPage(page, queryWrapper);
     }
 
     @Override
@@ -72,10 +75,37 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements IR
             for (Integer id : list) {
                 if (!hasUser(id)) {
                     rolePermissionMapper.delete(new QueryWrapper<RolePermission>().eq("role_id", id));
-                    baseMapper.deleteById(id);
+                    roleMapper.deleteById(id);
                 }
             }
         }
         return true;
+    }
+
+    @Override
+    public boolean assignPermission(Integer roleId, List<Integer> permissionIds) {
+        //把原来关联的菜单删除
+        QueryWrapper<RolePermission> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("role_id", roleId);
+        rolePermissionMapper.delete(queryWrapper);
+        //插入新的数据
+        try {
+            if (permissionIds != null && !permissionIds.isEmpty()) {
+                for (Integer permissionId : permissionIds) {
+                    RolePermission rolePermission = new RolePermission();
+                    rolePermission.setRoleId(roleId);
+                    rolePermission.setPermissionId(permissionId);
+                    rolePermissionMapper.insert(rolePermission);
+                }
+            }
+        }catch (Exception e){
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public List<Integer> selectRoleIdByUserId(Integer userid) {
+        return roleMapper.selectRoleIdByUserId(userid);
     }
 }

@@ -37,6 +37,9 @@ public class Violation implements Serializable {
     @ApiModelProperty("车辆id")
     private Integer autoId;
 
+    @ApiModelProperty("车牌号码")
+    private String autoNum;
+
     @ApiModelProperty("违章时间")
     private LocalDateTime violationTime;
 
@@ -53,7 +56,7 @@ public class Violation implements Serializable {
     private Integer fine;
 
     @ApiModelProperty("是否处理 0 -未处理  1-已处理")
-    private Boolean status;
+    private Integer status;
 
     @ApiModelProperty("创建时间")
     @TableField(fill = FieldFill.INSERT)
@@ -65,4 +68,16 @@ public class Violation implements Serializable {
 
     @ApiModelProperty("是否删除")
     private Boolean deleted;
+
+    @TableField(exist = false)
+    private Integer lowFine;
+
+    @TableField(exist = false)
+    private Integer highFine;
+
+    @TableField(exist = false)
+    private LocalDateTime lowViolationTime;
+
+    @TableField(exist = false)
+    private LocalDateTime highViolationTime;
 }

@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -38,7 +40,11 @@ public class Maintain implements Serializable {
     @ApiModelProperty("车辆id")
     private Integer autoId;
 
+    @ApiModelProperty("车牌号码")
+    private String autoNum;
+
     @ApiModelProperty("维保时间")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate maintainTime;
 
     @ApiModelProperty("维保地点")
@@ -60,4 +66,18 @@ public class Maintain implements Serializable {
 
     @ApiModelProperty("是否删除")
     private Boolean deleted;
+
+    @TableField(exist = false)
+    private Integer lowCost;
+
+    @TableField(exist = false)
+    private Integer highCost;
+
+    @TableField(exist = false)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime lowMaintainTime;
+
+    @TableField(exist = false)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime highMaintainTime;
 }

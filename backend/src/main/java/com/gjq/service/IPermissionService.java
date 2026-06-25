@@ -2,6 +2,7 @@ package com.gjq.service;
 
 import com.gjq.entity.Permission;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.gjq.vo.RolePermissionVO;
 
 import java.util.List;
 
@@ -22,4 +23,6 @@ public interface IPermissionService extends IService<Permission> {
     List<Permission> selectTree();
 
     boolean hasChildren(Integer id);
+
+    RolePermissionVO selectPermissionTree(Integer userId,Integer roleId);
 }

@@ -31,6 +31,11 @@ public class AutoBrandController {
         return Result.success().setData(autoBrandService.searchByPage(page, autoBrand));
     }
 
+    @GetMapping("/maker/{makerId}")
+    public Result selectByMakerId(@PathVariable Integer makerId) {
+        return Result.success(autoBrandService.selectByMakerId(makerId));
+    }
+
     @PostMapping
     public Result save(@RequestBody AutoBrand autoBrand) {
         return autoBrandService.save(autoBrand) ? Result.success() : Result.fail();

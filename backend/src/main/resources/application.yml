@@ -56,9 +56,7 @@ mybatis-plus:
   # MyBatis-Plus 全局配置
   global-config:
     db-config:
-      # 主键策略：数据库自增
       id-type: auto
-      # 逻辑删除字段名，表中有 deleted 字段时会用于逻辑删除
       logic-delete-field: deleted
 
   # Mapper XML 文件扫描路径
@@ -77,3 +75,15 @@ encoder:
 
 request:
   login-url: /rental/user/login
+
+aliyun:
+  oss:
+    endpoint: oss-cn-shanghai.aliyuncs.com
+    access-key-id: ${ALIYUN_OSS_ACCESS_KEY_ID:}
+    access-key-secret: ${ALIYUN_OSS_ACCESS_KEY_SECRET:}
+    bucket-name: car-rental-system-gjq
+
+
+auto:
+  info:
+    maintain-mileage: 5000

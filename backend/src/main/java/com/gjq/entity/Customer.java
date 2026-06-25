@@ -41,6 +41,9 @@ public class Customer implements Serializable {
     @ApiModelProperty("客户年龄")
     private Integer age;
 
+    @ApiModelProperty("性别 0女 1男")
+    private Integer gender;
+
     @ApiModelProperty("手机号码")
     private String tel;
 
@@ -63,4 +66,10 @@ public class Customer implements Serializable {
 
     @ApiModelProperty("是否删除")
     private Boolean deleted;
+
+    @TableField(exist = false)
+    private Integer lowAge;
+
+    @TableField(exist = false)
+    private Integer highAge;
 }

@@ -70,6 +70,8 @@ const actions = {
         commit('SET_AVATAR', avatar)
         commit('SET_INTRODUCTION', introduction)
         commit('SET_CREATERID', id)
+        // 将权限码存入 sessionStorage，供按钮权限 hasPermission 使用
+        sessionStorage.setItem('permissionCode', JSON.stringify(roles))
         resolve(data)
       }).catch(error => {
         reject(error)

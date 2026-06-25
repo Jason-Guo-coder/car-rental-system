@@ -15,6 +15,16 @@ export default {
   },
   async delete(ids) {
     return await requestHttp.delete(`/rental/role/${ids}`)
+  },
+  async permissionTree(params) {
+    return await requestHttp.get('/rental/role/permissionTrees', params)
+  },
+  async assignPermission(roleId, permissionIds) {
+    return await requestHttp.get(`/rental/role/${roleId}/${permissionIds}`)
+  },
+  // 获取所有角色（不分页）
+  async list() {
+    return await requestHttp.get('/rental/role')
   }
 }
 

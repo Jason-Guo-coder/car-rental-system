@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gjq.entity.Role;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * <p>
  *  服务类
@@ -18,4 +20,8 @@ public interface IRoleService extends IService<Role> {
     boolean hasUser(Integer id);
 
     boolean delete(String ids);
+
+    boolean assignPermission(Integer roleId, List<Integer> permissionIds);
+
+    List<Integer> selectRoleIdByUserId(Integer userid);
 }

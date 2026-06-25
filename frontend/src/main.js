@@ -19,6 +19,9 @@ import './utils/error-log' // error log
 
 import * as filters from './filters' // global filters
 
+import hasPermission from './api/global_permission' // 按钮权限校验
+Vue.prototype.hasPermission = hasPermission
+
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api

@@ -17,4 +17,6 @@ public interface PermissionMapper extends BaseMapper<Permission> {
 
     List<Permission> selectPermissionListByUserId(Integer userId);
 
+    List<Permission> selectPermissionListByRoleId(Integer roleId);
+
 }

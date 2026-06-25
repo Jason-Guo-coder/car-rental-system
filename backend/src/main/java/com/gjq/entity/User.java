@@ -70,13 +70,13 @@ public class User implements Serializable, UserDetails {
     private String deptName;
 
     @ApiModelProperty("性别")
-    private Boolean gender;
+    private Integer gender;
 
     @ApiModelProperty("联系电话")
     private String phone;
 
     @ApiModelProperty("邮箱")
-    private String emial;
+    private String email;
 
     @ApiModelProperty("头像")
     private String avatar;

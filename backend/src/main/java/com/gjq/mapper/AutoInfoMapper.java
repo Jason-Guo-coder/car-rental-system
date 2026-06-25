@@ -1,7 +1,10 @@
 package com.gjq.mapper;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gjq.entity.AutoInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * <p>
@@ -12,5 +15,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @since 2026-06-22
  */
 public interface AutoInfoMapper extends BaseMapper<AutoInfo> {
+    Page<AutoInfo> searchByPage(Page<AutoInfo> page, AutoInfo autoInfo);
 
+    List<AutoInfo> toBeMaintain();
 }

@@ -7,7 +7,7 @@
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="queryRoleList">查询</el-button>
         <el-button type="warning" icon="el-icon-refresh" @click="resetQuery">重置</el-button>
-        <el-button type="success" icon="el-icon-plus" @click="addRole">新增</el-button>
+        <el-button v-if="hasPermission('sys:role:save')" type="success" icon="el-icon-plus" @click="addRole">新增</el-button>
         <el-button type="danger" icon="el-icon-delete" @click="deleteBatchRole">删除选中</el-button>
       </el-form-item>
     </el-form>
@@ -30,8 +30,8 @@
       <el-table-column label="操作" width="260">
         <template slot-scope="scope">
           <div class="role-actions">
-            <el-button type="primary" size="mini" icon="el-icon-edit" @click="editRole(scope.row)">编辑</el-button>
-            <el-button type="danger" size="mini" icon="el-icon-delete" @click="deleteRole(scope.row)">删除</el-button>
+            <el-button v-if="hasPermission('sys:role:edit')" type="primary" size="mini" icon="el-icon-edit" @click="editRole(scope.row)">编辑</el-button>
+            <el-button v-if="hasPermission('sys:role:delete')" type="danger" size="mini" icon="el-icon-delete" @click="deleteRole(scope.row)">删除</el-button>
             <el-button type="success" size="mini" icon="el-icon-setting" @click="handlePermission(scope.row)">权限分配</el-button>
           </div>
         </template>
@@ -64,6 +64,24 @@
         <el-button type="primary" @click="dialogStatus === 'create' ? createData() : updateData()">确 定</el-button>
       </div>
     </el-dialog>
+
+    <el-dialog :title="title" :visible.sync="dialogPermissionVisible" width="40%">
+      <el-tree
+        ref="tree"
+        :data="treeData"
+        show-checkbox
+        node-key="id"
+        :default-checked-keys="checkedKeys"
+        :props="defaultProps"
+        default-expand-all
+        empty-text="暂无数据"
+        check-strictly
+      />
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="clearSelect">取 消</el-button>
+        <el-button type="primary" @click="savePermission">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -81,8 +99,17 @@ export default {
       size: 5,
       total: 0,
       dialogVisible: false,
+      dialogPermissionVisible: false,
       dialogStatus: 'create',
       saveRole: {},
+      treeData: [],
+      checkedKeys: [],
+      title: '',
+      roleId: null,
+      defaultProps: {
+        children: 'children',
+        label: 'permissionLable'
+      },
       titleMap: {
         create: '新增角色',
         update: '修改角色'
@@ -188,8 +215,36 @@ export default {
         }
       })
     },
-    handlePermission() {
-      this.$message.warning('权限分配功能在后续章节完成')
+    handlePermission(row) {
+      this.roleId = row.id
+      this.title = `${row.roleName}权限分配`
+      this.dialogPermissionVisible = true
+      const params = { roleId: row.id, userId: this.$store.getters.createrId }
+      roleApi.permissionTree(params).then(res => {
+        if (res.success) {
+          this.treeData = res.data.permissionList
+          this.checkedKeys = res.data.checkedList
+          this.$nextTick(() => {
+            this.$refs.tree.setCheckedKeys(res.data.checkedList)
+          })
+        }
+      })
+    },
+    clearSelect() {
+      this.dialogPermissionVisible = false
+      this.checkedKeys = []
+    },
+    savePermission() {
+      const permissionIds = this.$refs.tree.getCheckedKeys()
+      roleApi.assignPermission(this.roleId, permissionIds).then(res => {
+        if (res.success) {
+          this.$message({
+            message: '权限分配成功',
+            type: 'success'
+          })
+          this.dialogPermissionVisible = false
+        }
+      })
     },
     createData() {
       this.$refs.form.validate(async valid => {

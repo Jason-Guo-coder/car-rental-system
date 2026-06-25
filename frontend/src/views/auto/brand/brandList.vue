@@ -12,8 +12,8 @@
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
         <el-button type="warning" icon="el-icon-refresh" @click="resetForm">重置</el-button>
-        <el-button type="success" icon="el-icon-plus" @click="handleCreate">新增</el-button>
-        <el-button type="danger" icon="el-icon-delete" @click="deleteBatch">删除选中</el-button>
+        <el-button v-if="hasPermission('auto:brand:add')" type="success" icon="el-icon-plus" @click="handleCreate">新增</el-button>
+        <el-button v-if="hasPermission('auto:brand:delete')" type="danger" icon="el-icon-delete" @click="deleteBatch">删除选中</el-button>
       </el-form-item>
     </el-form>
 
@@ -32,8 +32,8 @@
       <el-table-column label="品牌名称" prop="brandName" />
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-button size="mini" type="primary" icon="el-icon-edit" @click="handleUpdate(scope.row)">修改</el-button>
-          <el-button size="mini" type="danger" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
+          <el-button v-if="hasPermission('auto:brand:edit')" size="mini" type="primary" icon="el-icon-edit" @click="handleUpdate(scope.row)">修改</el-button>
+          <el-button v-if="hasPermission('auto:brand:delete')" size="mini" type="danger" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
