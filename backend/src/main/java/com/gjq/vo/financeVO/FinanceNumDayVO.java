@@ -1,0 +1,13 @@
+package com.gjq.vo.financeVO;
+
+import lombok.Data;
+
+@Data
+public class FinanceNumDayVO {
+    //按天的小时数
+    private Integer hours;
+    //出租的数量
+    private Integer rentalNum;
+    //归还的数量
+    private Integer returnNum;
+}

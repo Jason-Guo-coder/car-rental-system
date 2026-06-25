@@ -47,4 +47,11 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         }
         return false;
     }
+
+    @Override
+    public Customer selectCustomerByTel(String tel) {
+        QueryWrapper<Customer> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("tel", tel);
+        return customerMapper.selectOne(queryWrapper);
+    }
 }

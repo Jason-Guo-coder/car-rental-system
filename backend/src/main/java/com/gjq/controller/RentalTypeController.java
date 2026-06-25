@@ -28,6 +28,12 @@ public class RentalTypeController {
         Page<RentalType> page=new Page<>(start,size);
         return Result.success(rentalTypeService.searchByPage(page,rentalType));
     }
+
+    // 查询所有出租类型（出租时下拉选择）
+    @GetMapping
+    public Result selectAll(){
+        return Result.success(rentalTypeService.list());
+    }
     @PostMapping
     public Result save(@RequestBody RentalType rentalType){
         return rentalTypeService.save(rentalType)?Result.success():Result.fail();

@@ -12,5 +12,9 @@ export default {
   },
   async delete(ids) {
     return await requestHttp.delete(`/rental/rentalType/${ids}`)
+  },
+  // 查询所有出租类型（出租下拉用）
+  async selectAll() {
+    return await requestHttp.get('/rental/rentalType')
   }
 }

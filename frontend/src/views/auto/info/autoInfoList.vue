@@ -206,7 +206,16 @@ export default {
   name: 'AutoInfoList',
   data() {
     return {
-      infoModel: {},
+      infoModel: {
+        makerId: undefined,
+        brandId: undefined,
+        autoNum: undefined,
+        infoType: undefined,
+        status: undefined,
+        lowRent: undefined,
+        highRent: undefined,
+        registrationDateVal: undefined
+      },
       tableData: [],
       multipleSelection: [],
       start: 1,
@@ -286,7 +295,16 @@ export default {
       this.search(1)
     },
     resetForm() {
-      this.infoModel = {}
+      this.infoModel = {
+        makerId: undefined,
+        brandId: undefined,
+        autoNum: undefined,
+        infoType: undefined,
+        status: undefined,
+        lowRent: undefined,
+        highRent: undefined,
+        registrationDateVal: undefined
+      }
       this.brandList = []
       this.search(1)
     },

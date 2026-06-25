@@ -72,7 +72,7 @@ public class AutoInfo implements Serializable {
     private Integer deposit;
 
     @ApiModelProperty("状态 0-未租   1 -已租   2-维保   3-自用")
-    private Boolean status;
+    private Integer status;
 
     @ApiModelProperty("创建时间")
     @TableField(fill = FieldFill.INSERT)

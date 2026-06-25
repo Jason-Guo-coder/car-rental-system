@@ -44,6 +44,20 @@ spring:
       # 使用 Ant 风格路径匹配，常用于兼容 Springfox Swagger
       matching-strategy: ant_path_matcher
 
+  # 邮件配置
+  mail:
+    host: smtp.163.com
+    port: 465
+
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    default-encoding: UTF-8
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.ssl.enable: true
+
 # MyBatis-Plus 配置
 mybatis-plus:
   # MyBatis 原生配置
@@ -82,7 +96,6 @@ aliyun:
     access-key-id: ${ALIYUN_OSS_ACCESS_KEY_ID:}
     access-key-secret: ${ALIYUN_OSS_ACCESS_KEY_SECRET:}
     bucket-name: car-rental-system-gjq
-
 
 auto:
   info:

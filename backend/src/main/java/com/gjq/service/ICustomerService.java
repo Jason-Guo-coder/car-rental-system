@@ -18,4 +18,6 @@ public interface ICustomerService extends IService<Customer> {
     Page searchByPage(Page<Customer> page , Customer customer);
 
     boolean delete(String ids);
+
+    Customer selectCustomerByTel(String tel);
 }

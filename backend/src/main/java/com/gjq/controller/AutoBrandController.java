@@ -1,12 +1,18 @@
 package com.gjq.controller;
 
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gjq.entity.AutoBrand;
 import com.gjq.service.IAutoBrandService;
 import com.gjq.utils.Result;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -50,5 +56,19 @@ public class AutoBrandController {
     public Result delete(@PathVariable String ids) {
         List<Integer> list = Arrays.stream(ids.split(",")).map(Integer::parseInt).toList();
         return autoBrandService.removeByIds(list) ? Result.success() : Result.fail();
+    }
+
+    @GetMapping("exportExcel")
+    public void export(HttpServletResponse response) throws IOException {
+        List<AutoBrand> list=autoBrandService.list();
+        ExcelWriter writer= ExcelUtil.getWriter(true);
+        writer.addHeaderAlias("brandName","品牌名称");
+        writer.addHeaderAlias("deleted","是否删除");
+        writer.write(list,true);
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset:utf-8");
+        String fileName= URLEncoder.encode("汽车品牌", StandardCharsets.UTF_8);
+        response.setHeader("Content-Disposition","attachment;filename="+fileName+".xlsx");
+        writer.flush(response.getOutputStream(),true);
+        writer.close();
     }
 }

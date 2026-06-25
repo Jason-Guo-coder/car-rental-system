@@ -1,18 +1,13 @@
 -- ============================================================
--- 车辆租赁管理系统 数据库重建脚本
--- 清空全部业务/权限表，插入真实感模拟数据
--- 所有用户密码统一为 041009 (BCrypt strength=6)
+-- 车辆租赁管理系统 业务数据重构脚本（表结构不动，仅业务表数据）
+-- 仅重构 8 张业务表：auto_maker/auto_brand/auto_info/busi_rental_type/
+--                   busi_customer/busi_order/busi_maintain/busi_violation
+-- 权限体系表(dept/role/permission/user/role_permission/user_role)保持不动
+-- 当前业务日期基准：2026-06-25；订单覆盖 6 月各天与当天各小时，供财务日报/月报统计
 -- ============================================================
 USE car_rental_system;
 
 SET FOREIGN_KEY_CHECKS = 0;
-
-TRUNCATE sys_dept;
-TRUNCATE sys_role;
-TRUNCATE sys_permission;
-TRUNCATE sys_role_permission;
-TRUNCATE sys_user;
-TRUNCATE sys_user_role;
 TRUNCATE auto_maker;
 TRUNCATE auto_brand;
 TRUNCATE auto_info;
@@ -21,247 +16,160 @@ TRUNCATE busi_customer;
 TRUNCATE busi_order;
 TRUNCATE busi_maintain;
 TRUNCATE busi_violation;
-
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================
--- 1. 部门 sys_dept （租车公司组织架构）
--- ============================================================
-INSERT INTO sys_dept (id, dept_name, phone, address, pid, parent_name, order_num, deleted) VALUES
-(1, '宇通汽车租赁有限公司', '021-68881000', '上海市浦东新区世纪大道100号', 0, NULL, 1, 0),
-(2, '综合管理部', '021-68881001', '上海市浦东新区世纪大道100号A座3楼', 1, '宇通汽车租赁有限公司', 2, 0),
-(3, '运营部',     '021-68881002', '上海市浦东新区世纪大道100号A座5楼', 1, '宇通汽车租赁有限公司', 3, 0),
-(4, '财务部',     '021-68881003', '上海市浦东新区世纪大道100号A座6楼', 1, '宇通汽车租赁有限公司', 4, 0),
-(5, '车辆维保部', '021-68881004', '上海市浦东新区龙东大道3000号维保中心', 1, '宇通汽车租赁有限公司', 5, 0),
-(6, '客户服务部', '021-68881005', '上海市浦东新区世纪大道100号A座2楼', 1, '宇通汽车租赁有限公司', 6, 0);
-
--- ============================================================
--- 2. 角色 sys_role
--- ============================================================
-INSERT INTO sys_role (id, role_code, role_name, creater_id, create_time, update_time, remark, deleted) VALUES
-(1, 'ROLE_ADMIN',      '系统管理员', 1, NOW(), NOW(), '系统超级管理员，拥有全部权限',           0),
-(2, 'ROLE_OPERATOR',   '运营专员',   1, NOW(), NOW(), '负责车辆出租、归还及订单管理',           0),
-(3, 'ROLE_FINANCE',    '财务专员',   1, NOW(), NOW(), '负责财务统计、报表与押金核算',           0),
-(4, 'ROLE_MAINTAINER', '维保专员',   1, NOW(), NOW(), '负责车辆保养与违章处理',                 0),
-(5, 'ROLE_SERVICE',    '客服专员',   1, NOW(), NOW(), '负责客户信息管理与黑白名单维护',         0);
-
--- ============================================================
--- 3. 权限菜单 sys_permission
---    type: 0根目录 1子菜单 2按钮
---    根目录 component=Layout(前端处理)，子菜单 route_url 指向真实 vue 文件
--- ============================================================
--- ---------- 权限管理 (根 id=1) ----------
-INSERT INTO sys_permission (id, permission_lable, pid, parent_label, permission_code, route_path, route_name, route_url, permission_type, icon, order_num, create_time, update_time, remark, deleted) VALUES
-(1,  '权限管理', 0, NULL, 'sys:manager', '/system', 'system', '/system/system', 0, 'lock', 1, NOW(), NOW(), NULL, 0),
-(2,  '用户管理', 1, '权限管理', 'sys:user',       '/userList',   'userList',   '/system/user/userList',         1, 'user',      1, NOW(), NOW(), NULL, 0),
-(3,  '部门管理', 1, '权限管理', 'sys:dept',       '/deptList',   'deptList',   '/system/dept/deptList',         1, 'tree',      2, NOW(), NOW(), NULL, 0),
-(4,  '角色管理', 1, '权限管理', 'sys:role',       '/roleList',   'roleList',   '/system/role/roleList',         1, 'peoples',   3, NOW(), NOW(), NULL, 0),
-(5,  '菜单管理', 1, '权限管理', 'sys:permission', '/permission', 'permission', '/system/permission/perr',       1, 'list',      4, NOW(), NOW(), NULL, 0),
--- 用户管理按钮
-(6,  '新增',     2, '用户管理', 'sys:user:add',         NULL, NULL, NULL, 2, NULL, 1, NOW(), NOW(), NULL, 0),
-(7,  '修改',     2, '用户管理', 'sys:user:edit',        NULL, NULL, NULL, 2, NULL, 2, NOW(), NOW(), NULL, 0),
-(8,  '删除',     2, '用户管理', 'sys:user:delete',      NULL, NULL, NULL, 2, NULL, 3, NOW(), NOW(), NULL, 0),
-(9,  '查询',     2, '用户管理', 'sys:user:select',      NULL, NULL, NULL, 2, NULL, 4, NOW(), NOW(), NULL, 0),
-(10, '删除选中', 2, '用户管理', 'sys:user:deleteBatch', NULL, NULL, NULL, 2, NULL, 5, NOW(), NOW(), NULL, 0),
--- 部门管理按钮
-(11, '新增', 2, '部门管理', 'sys:dept:add',    NULL, NULL, NULL, 2, NULL, 1, NOW(), NOW(), NULL, 0),
-(12, '修改', 2, '部门管理', 'sys:dept:edit',   NULL, NULL, NULL, 2, NULL, 2, NOW(), NOW(), NULL, 0),
-(13, '删除', 2, '部门管理', 'sys:dept:delete', NULL, NULL, NULL, 2, NULL, 3, NOW(), NOW(), NULL, 0),
-(14, '查询', 2, '部门管理', 'sys:dept:select', NULL, NULL, NULL, 2, NULL, 4, NOW(), NOW(), NULL, 0),
--- 角色管理按钮 (新增码=sys:role:save，与后端 @PreAuthorize 对齐)
-(15, '新增',     2, '角色管理', 'sys:role:save',   NULL, NULL, NULL, 2, NULL, 1, NOW(), NOW(), NULL, 0),
-(16, '修改',     2, '角色管理', 'sys:role:edit',   NULL, NULL, NULL, 2, NULL, 2, NOW(), NOW(), NULL, 0),
-(17, '删除',     2, '角色管理', 'sys:role:delete', NULL, NULL, NULL, 2, NULL, 3, NOW(), NOW(), NULL, 0),
-(18, '查询',     2, '角色管理', 'sys:role:select', NULL, NULL, NULL, 2, NULL, 4, NOW(), NOW(), NULL, 0),
--- 菜单管理按钮
-(19, '新增', 2, '菜单管理', 'sys:permission:add',    NULL, NULL, NULL, 2, NULL, 1, NOW(), NOW(), NULL, 0),
-(20, '修改', 2, '菜单管理', 'sys:permission:edit',   NULL, NULL, NULL, 2, NULL, 2, NOW(), NOW(), NULL, 0),
-(21, '删除', 2, '菜单管理', 'sys:permission:delete', NULL, NULL, NULL, 2, NULL, 3, NOW(), NOW(), NULL, 0),
-(22, '查询', 2, '菜单管理', 'sys:permission:select', NULL, NULL, NULL, 2, NULL, 4, NOW(), NOW(), NULL, 0);
-
--- ---------- 数据初始 (根 id=30) ----------
-INSERT INTO sys_permission (id, permission_lable, pid, parent_label, permission_code, route_path, route_name, route_url, permission_type, icon, order_num, create_time, update_time, remark, deleted) VALUES
-(30, '数据初始', 0, NULL, 'auto:manager', '/auto', 'auto', '/auto/auto', 0, 'component', 2, NOW(), NOW(), NULL, 0),
-(31, '车辆厂商', 30, '数据初始', 'auto:maker',      '/makerList',      'makerList',      '/auto/maker/makerList',           1, 'guide', 1, NOW(), NOW(), NULL, 0),
-(32, '车辆品牌', 30, '数据初始', 'auto:brand',      '/brandList',      'brandList',      '/auto/brand/brandList',           1, 'tab',   2, NOW(), NOW(), NULL, 0),
-(33, '出租类型', 30, '数据初始', 'auto:rentalType', '/rentalTypeList', 'rentalTypeList', '/auto/rentalType/rentalTypeList', 1, 'form',  3, NOW(), NOW(), NULL, 0),
--- 车辆厂商按钮
-(34, '新增', 2, '车辆厂商', 'auto:maker:add',    NULL, NULL, NULL, 2, NULL, 1, NOW(), NOW(), NULL, 0),
-(35, '修改', 2, '车辆厂商', 'auto:maker:edit',   NULL, NULL, NULL, 2, NULL, 2, NOW(), NOW(), NULL, 0),
-(36, '删除', 2, '车辆厂商', 'auto:maker:delete', NULL, NULL, NULL, 2, NULL, 3, NOW(), NOW(), NULL, 0),
-(37, '查询', 2, '车辆厂商', 'auto:maker:select', NULL, NULL, NULL, 2, NULL, 4, NOW(), NOW(), NULL, 0),
--- 车辆品牌按钮
-(38, '新增', 2, '车辆品牌', 'auto:brand:add',    NULL, NULL, NULL, 2, NULL, 1, NOW(), NOW(), NULL, 0),
-(39, '修改', 2, '车辆品牌', 'auto:brand:edit',   NULL, NULL, NULL, 2, NULL, 2, NOW(), NOW(), NULL, 0),
-(40, '删除', 2, '车辆品牌', 'auto:brand:delete', NULL, NULL, NULL, 2, NULL, 3, NOW(), NOW(), NULL, 0),
-(41, '查询', 2, '车辆品牌', 'auto:brand:select', NULL, NULL, NULL, 2, NULL, 4, NOW(), NOW(), NULL, 0),
--- 出租类型按钮
-(42, '新增', 2, '出租类型', 'auto:rentalType:add',    NULL, NULL, NULL, 2, NULL, 1, NOW(), NOW(), NULL, 0),
-(43, '修改', 2, '出租类型', 'auto:rentalType:edit',   NULL, NULL, NULL, 2, NULL, 2, NOW(), NOW(), NULL, 0),
-(44, '删除', 2, '出租类型', 'auto:rentalType:delete', NULL, NULL, NULL, 2, NULL, 3, NOW(), NOW(), NULL, 0),
-(45, '查询', 2, '出租类型', 'auto:rentalType:select', NULL, NULL, NULL, 2, NULL, 4, NOW(), NOW(), NULL, 0);
-
--- ---------- 日常业务 (根 id=60) ----------
-INSERT INTO sys_permission (id, permission_lable, pid, parent_label, permission_code, route_path, route_name, route_url, permission_type, icon, order_num, create_time, update_time, remark, deleted) VALUES
-(60, '日常业务', 0, NULL, 'busi:manager', '/busi', 'busi', '/busi/busi', 0, 'shopping', 3, NOW(), NOW(), NULL, 0),
-(61, '汽车出租', 60, '日常业务', 'busi:rental', '/rentalList', 'rentalList', '/busi/rental/rentalList', 1, 'money', 1, NOW(), NOW(), NULL, 0),
--- 汽车出租按钮
-(62, '出租', 2, '汽车出租', 'busi:rental:rent',   NULL, NULL, NULL, 2, NULL, 1, NOW(), NOW(), NULL, 0),
-(63, '归还', 2, '汽车出租', 'busi:rental:return', NULL, NULL, NULL, 2, NULL, 2, NOW(), NOW(), NULL, 0);
-
--- ============================================================
--- 4. 用户 sys_user （真实人名，密码统一 041009）
---    gender: 1男 2女   is_admin: 1是 0否
--- ============================================================
-INSERT INTO sys_user (id, username, password, is_account_non_expired, is_account_non_locked, is_credentials_non_expired, is_enabled, realname, nickname, dept_id, dept_name, gender, phone, email, avatar, is_admin, create_time, update_time, deleted) VALUES
-(1, 'admin',    '$2a$06$rtw5tHzBKCupQnTEcXeHYOLWDmo5NpP2qYAmooCeZX9argF8EuUwa', 1,1,1,1, '王建国', '老王',   2, '综合管理部', 1, '13801380001', 'wangjianguo@yutong-rental.com', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 1, NOW(), NOW(), 0),
-(2, 'liyun',    '$2a$06$rtw5tHzBKCupQnTEcXeHYOLWDmo5NpP2qYAmooCeZX9argF8EuUwa', 1,1,1,1, '李芸',   '芸芸',   3, '运营部',     2, '13801380002', 'liyun@yutong-rental.com',       'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 0, NOW(), NOW(), 0),
-(3, 'zhaominghui','$2a$06$rtw5tHzBKCupQnTEcXeHYOLWDmo5NpP2qYAmooCeZX9argF8EuUwa', 1,1,1,1, '赵明辉', '老赵',   4, '财务部',     1, '13801380003', 'zhaominghui@yutong-rental.com', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 0, NOW(), NOW(), 0),
-(4, 'chenqiang','$2a$06$rtw5tHzBKCupQnTEcXeHYOLWDmo5NpP2qYAmooCeZX9argF8EuUwa', 1,1,1,1, '陈强',   '强哥',   5, '车辆维保部', 1, '13801380004', 'chenqiang@yutong-rental.com',   'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 0, NOW(), NOW(), 0),
-(5, 'sunjiao',  '$2a$06$rtw5tHzBKCupQnTEcXeHYOLWDmo5NpP2qYAmooCeZX9argF8EuUwa', 1,1,1,1, '孙娇',   '小孙',   6, '客户服务部', 2, '13801380005', 'sunjiao@yutong-rental.com',     'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 0, NOW(), NOW(), 0);
-
--- ============================================================
--- 5. 用户-角色 sys_user_role
--- ============================================================
-INSERT INTO sys_user_role (user_id, role_id) VALUES
-(1, 1),  -- 王建国 - 系统管理员
-(2, 2),  -- 李芸   - 运营专员
-(3, 3),  -- 赵明辉 - 财务专员
-(4, 4),  -- 陈强   - 维保专员
-(5, 5);  -- 孙娇   - 客服专员
-
--- ============================================================
--- 6. 角色-权限 sys_role_permission
--- ============================================================
--- 系统管理员(role 1)：拥有全部权限
-INSERT INTO sys_role_permission (role_id, permission_id)
-SELECT 1, id FROM sys_permission;
-
--- 运营专员(role 2)：日常业务 + 数据初始查看
-INSERT INTO sys_role_permission (role_id, permission_id) VALUES
-(2,60),(2,61),(2,62),(2,63),
-(2,30),(2,31),(2,37),(2,32),(2,41),(2,33),(2,45);
-
--- 财务专员(role 3)：日常业务查看
-INSERT INTO sys_role_permission (role_id, permission_id) VALUES
-(3,60),(3,61),
-(3,30),(3,33),(3,45);
-
--- 维保专员(role 4)：数据初始(车辆相关)
-INSERT INTO sys_role_permission (role_id, permission_id) VALUES
-(4,30),(4,31),(4,37),(4,32),(4,41);
-
--- 客服专员(role 5)：日常业务 + 权限管理中的用户查看
-INSERT INTO sys_role_permission (role_id, permission_id) VALUES
-(5,60),(5,61),(5,62),(5,63);
-
--- ============================================================
--- 7. 车辆厂商 auto_maker
+-- 1. 厂商
 -- ============================================================
 INSERT INTO auto_maker (id, name, order_letter, deleted) VALUES
-(1, '一汽大众',   'YQDZ', 0),
-(2, '上汽大众',   'SQDZ', 0),
-(3, '上汽通用别克','SQTYBK', 0),
-(4, '广汽丰田',   'GQFT', 0),
-(5, '东风日产',   'DFRC', 0),
-(6, '华晨宝马',   'HCBM', 0),
-(7, '北京奔驰',   'BJBC', 0),
-(8, '比亚迪',     'BYD',  0),
-(9, '特斯拉',     'TSL',  0);
+(1, '一汽大众', 'YQDZ', 0),
+(2, '上汽大众', 'SQDZ', 0),
+(3, '上汽通用别克', 'SQTYBK', 0),
+(4, '广汽丰田', 'GQFT', 0),
+(5, '东风日产', 'DFRC', 0),
+(6, '华晨宝马', 'HCBM', 0),
+(7, '北京奔驰', 'BJBC', 0),
+(8, '比亚迪', 'BYD', 0),
+(9, '特斯拉', 'TSL', 0);
 
 -- ============================================================
--- 8. 车辆品牌 auto_brand (mid 关联厂商)
+-- 2. 品牌（mid 关联厂商）
 -- ============================================================
 INSERT INTO auto_brand (id, mid, brand_name, deleted) VALUES
-(1,  1, '迈腾',    0),
-(2,  1, '速腾',    0),
-(3,  1, '宝来',    0),
-(4,  2, '帕萨特',  0),
-(5,  2, '朗逸',    0),
-(6,  2, '途观L',   0),
-(7,  3, '君威',    0),
-(8,  3, '昂科威',  0),
-(9,  4, '凯美瑞',  0),
-(10, 4, '汉兰达',  0),
-(11, 4, '雷凌',    0),
-(12, 5, '轩逸',    0),
-(13, 5, '天籁',    0),
-(14, 6, '宝马3系', 0),
-(15, 6, '宝马5系', 0),
-(16, 7, '奔驰C级', 0),
-(17, 7, '奔驰E级', 0),
-(18, 8, '汉EV',    0),
-(19, 8, '宋PLUS',  0),
-(20, 9, 'Model 3', 0),
-(21, 9, 'Model Y', 0);
+(1, 1, '迈腾', 0), (2, 1, '速腾', 0), (3, 1, '宝来', 0),
+(4, 2, '帕萨特', 0), (5, 2, '朗逸', 0), (6, 2, '途观L', 0),
+(7, 3, '君威', 0), (8, 3, '昂科威', 0),
+(9, 4, '凯美瑞', 0), (10, 4, '汉兰达', 0), (11, 4, '雷凌', 0),
+(12, 5, '轩逸', 0), (13, 5, '天籁', 0),
+(14, 6, '宝马3系', 0), (15, 6, '宝马5系', 0),
+(16, 7, '奔驰C级', 0), (17, 7, '奔驰E级', 0),
+(18, 8, '汉EV', 0), (19, 8, '宋PLUS', 0),
+(20, 9, 'Model 3', 0), (21, 9, 'Model Y', 0);
 
 -- ============================================================
--- 9. 出租类型 busi_rental_type
+-- 3. 出租类型
 -- ============================================================
 INSERT INTO busi_rental_type (id, type_name, type_discount, remark, create_time, update_time, deleted) VALUES
-(1, '日租',     1.00, '按日计费，不享受折扣',       NOW(), NOW(), 0),
-(2, '周租',     0.90, '连续租满7天，享受9折优惠',   NOW(), NOW(), 0),
-(3, '月租',     0.80, '连续租满30天，享受8折优惠',  NOW(), NOW(), 0),
-(4, 'VIP会员',  0.75, 'VIP会员专享7.5折',           NOW(), NOW(), 0),
-(5, '企业长租', 0.70, '企业客户长期合作专享7折',     NOW(), NOW(), 0);
+(1, '日租',     1.00, '按日计费，不享受折扣',      NOW(), NOW(), 0),
+(2, '周租',     0.90, '连续租满7天，享受9折优惠',  NOW(), NOW(), 0),
+(3, '月租',     0.80, '连续租满30天，享受8折优惠', NOW(), NOW(), 0),
+(4, 'VIP会员',  0.75, 'VIP会员专享7.5折',          NOW(), NOW(), 0),
+(5, '企业长租', 0.70, '企业客户长期合作专享7折',    NOW(), NOW(), 0);
 
 -- ============================================================
--- 10. 车辆信息 auto_info
---     info_type:0燃油 1电动 2混动  status:0未租 1已租 2维保 3自用
+-- 4. 车辆信息（20辆）  info_type:0燃油1电动2混动  status:0未租1已租2维保3自用
 -- ============================================================
 INSERT INTO auto_info (id, auto_num, maker_id, brand_id, info_type, color, displacement, unit, mileage, rent, registration_date, pic, deposit, status, create_time, update_time, expected_num, actual_num, deleted) VALUES
-(1,  '沪A8K231', 1, 1, 0, '星空灰', 2.0, 'L',  42000, 320, '2022-04-15', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 5000,  0, NOW(), NOW(), 8,  6, 0),
-(2,  '沪A8K232', 2, 4, 0, '珍珠白', 1.4, 'T',  28000, 260, '2022-09-10', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 4000,  1, NOW(), NOW(), 5,  5, 0),
-(3,  '沪A8K233', 4, 9, 0, '铂金白', 2.5, 'L',  18500, 360, '2023-03-22', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 6000,  0, NOW(), NOW(), 3,  3, 0),
-(4,  '沪A8K234', 6, 14,0, '矿石灰', 2.0, 'T',  9800,  580, '2023-08-18', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 10000, 1, NOW(), NOW(), 2,  2, 0),
-(5,  '沪A8K235', 7, 16,0, '曜岩黑', 1.5, 'T',  15600, 620, '2023-05-30', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 12000, 0, NOW(), NOW(), 3,  2, 0),
-(6,  '沪A8K236', 8, 18,1, '雅顺灰', 0,   'kWh',32000, 280, '2022-11-05', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 4000,  2, NOW(), NOW(), 6,  5, 0),
-(7,  '沪A8K237', 9, 20,1, '中国红', 0,   'kWh',21000, 450, '2023-01-12', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 8000,  0, NOW(), NOW(), 4,  4, 0),
-(8,  '沪A8K238', 5, 12,0, '极光银', 1.6, 'L',  56000, 180, '2021-07-20', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 3000,  3, NOW(), NOW(), 11, 9, 0),
-(9,  '沪A8K239', 3, 7, 0, '深空蓝', 2.0, 'T',  33000, 300, '2022-06-08', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 5000,  1, NOW(), NOW(), 7,  6, 0),
-(10, '沪A8K240', 8, 19,2, '冰川蓝', 1.5, 'L',  12000, 240, '2023-09-01', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 4000,  0, NOW(), NOW(), 2,  2, 0);
+(1,  '沪A8K231', 1, 1, 0, '#2C3E50', 2.0, 'T', 42000, 320, '2022-04-15', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 5000,  0, NOW(), NOW(), 8,  6, 0),
+(2,  '沪A8K232', 1, 2, 0, '#ECF0F1', 1.4, 'T', 28000, 240, '2022-09-10', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 4000,  0, NOW(), NOW(), 5,  5, 0),
+(3,  '沪A8K233', 2, 4, 0, '#FFFFFF', 2.0, 'T', 18500, 300, '2023-03-22', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 6000,  1, NOW(), NOW(), 3,  3, 0),
+(4,  '沪A8K234', 2, 5, 0, '#C0392B', 1.5, 'L', 33000, 220, '2021-12-01', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 3500,  0, NOW(), NOW(), 6,  5, 0),
+(5,  '沪A8K235', 3, 7, 0, '#34495E', 2.0, 'T', 25000, 280, '2022-07-18', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 5000,  1, NOW(), NOW(), 5,  4, 0),
+(6,  '沪A8K236', 4, 9, 2, '#BDC3C7', 2.5, 'L', 15600, 360, '2023-05-30', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 6000,  0, NOW(), NOW(), 3,  2, 0),
+(7,  '沪A8K237', 4, 10,0, '#7F8C8D', 2.0, 'T', 48000, 420, '2021-08-12', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 8000,  0, NOW(), NOW(), 9,  7, 0),
+(8,  '沪A8K238', 5, 12,0, '#16A085', 1.6, 'L', 56000, 180, '2021-07-20', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 3000,  3, NOW(), NOW(), 11, 9, 0),
+(9,  '沪A8K239', 5, 13,0, '#2980B9', 2.0, 'L', 31000, 260, '2022-06-08', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 5000,  0, NOW(), NOW(), 6,  6, 0),
+(10, '沪A8K240', 6, 14,0, '#8E44AD', 2.0, 'T', 22000, 500, '2023-02-14', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 10000, 1, NOW(), NOW(), 4,  3, 0),
+(11, '沪A8K241', 6, 15,0, '#2C3E50', 2.0, 'T', 12000, 600, '2023-09-01', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 12000, 0, NOW(), NOW(), 2,  2, 0),
+(12, '沪A8K242', 7, 16,0, '#000000', 1.5, 'T', 19000, 550, '2023-04-25', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 11000, 1, NOW(), NOW(), 3,  3, 0),
+(13, '沪A8K243', 7, 17,0, '#7F8C8D', 2.0, 'T', 28000, 700, '2022-11-11', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 15000, 0, NOW(), NOW(), 5,  4, 0),
+(14, '沪A8K244', 8, 18,1, '#C0392B', 0,   'kWh',32000, 320, '2022-11-05', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 5000,  1, NOW(), NOW(), 6,  5, 0),
+(15, '沪A8K245', 8, 19,2, '#3498DB', 1.5, 'L', 21000, 280, '2023-01-12', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 4000,  0, NOW(), NOW(), 4,  4, 0),
+(16, '沪A8K246', 9, 20,1, '#FFFFFF', 0,   'kWh',18000, 450, '2023-06-18', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 8000,  0, NOW(), NOW(), 3,  3, 0),
+(17, '沪A8K247', 9, 21,1, '#C0392B', 0,   'kWh',9000,  480, '2023-10-20', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 9000,  0, NOW(), NOW(), 1,  1, 0),
+(18, '沪A8K248', 1, 3, 0, '#E74C3C', 1.5, 'L', 67000, 160, '2020-05-30', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 3000,  2, NOW(), NOW(), 13, 11,0),
+(19, '沪A8K249', 3, 8, 0, '#34495E', 2.0, 'T', 38000, 380, '2022-03-15', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 7000,  0, NOW(), NOW(), 7,  6, 0),
+(20, '沪A8K250', 4, 11,0, '#95A5A6', 1.2, 'T', 14000, 200, '2023-07-08', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', 4000,  0, NOW(), NOW(), 2,  2, 0);
 
 -- ============================================================
--- 11. 客户 busi_customer
---     gender:1男 2女  status:0黑名单 1白名单  (身份证号为虚构测试号)
+-- 5. 客户（15）  gender:1男0女  status:1白名单0黑名单（虚构身份证）
 -- ============================================================
 INSERT INTO busi_customer (id, name, age, gender, tel, birthday, id_num, status, create_time, update_time, deleted) VALUES
-(1, '刘德海', 38, 1, '13912340001', '1987-05-12', '310101198705120013', 1, NOW(), NOW(), 0),
-(2, '周婷婷', 29, 2, '13912340002', '1996-11-23', '310104199611230028', 1, NOW(), NOW(), 0),
-(3, '吴志强', 45, 1, '13912340003', '1980-02-08', '310108198002080517', 1, NOW(), NOW(), 0),
-(4, '林晓梅', 33, 2, '13912340004', '1992-08-19', '310105199208190542', 0, NOW(), NOW(), 0),
-(5, '郑国平', 51, 1, '13912340005', '1974-12-30', '310110197412300033', 1, NOW(), NOW(), 0),
-(6, '黄丽华', 27, 2, '13912340006', '1998-06-15', '310115199806150264', 1, NOW(), NOW(), 0);
+(1,  '刘德海', 38, 1, '13912340001', '1987-05-12', '310101198705120013', 1, NOW(), NOW(), 0),
+(2,  '周婷婷', 29, 0, '13912340002', '1996-11-23', '310104199611230028', 1, NOW(), NOW(), 0),
+(3,  '吴志强', 45, 1, '13912340003', '1980-02-08', '310108198002080517', 1, NOW(), NOW(), 0),
+(4,  '林晓梅', 33, 0, '13912340004', '1992-08-19', '310105199208190542', 0, NOW(), NOW(), 0),
+(5,  '郑国平', 51, 1, '13912340005', '1974-12-30', '310110197412300033', 1, NOW(), NOW(), 0),
+(6,  '黄丽华', 27, 0, '13912340006', '1998-06-15', '310115199806150264', 1, NOW(), NOW(), 0),
+(7,  '陈建军', 41, 1, '13912340007', '1984-03-21', '310101198403210011', 1, NOW(), NOW(), 0),
+(8,  '杨秀英', 36, 0, '13912340008', '1989-09-09', '310104198909090020', 1, NOW(), NOW(), 0),
+(9,  '徐海涛', 32, 1, '13912340009', '1993-07-07', '310108199307070518', 1, NOW(), NOW(), 0),
+(10, '孙丽娟', 48, 0, '13912340010', '1977-01-25', '310105197701250540', 1, NOW(), NOW(), 0),
+(11, '马文斌', 25, 1, '13912340011', '2000-10-18', '310110200010180035', 1, NOW(), NOW(), 0),
+(12, '高雪梅', 39, 0, '13912340012', '1986-04-04', '310115198604040262', 0, NOW(), NOW(), 0),
+(13, '罗永强', 44, 1, '13912340013', '1981-11-30', '310101198111300017', 1, NOW(), NOW(), 0),
+(14, '何敏', 30, 0, '13912340014', '1995-02-14', '310104199502140026', 1, NOW(), NOW(), 0),
+(15, '邓超', 35, 1, '13912340015', '1990-12-01', '310108199012010513', 1, NOW(), NOW(), 0);
 
 -- ============================================================
--- 12. 订单 busi_order
---     deposit_return:0未返还 1已返还
+-- 6. 订单（覆盖6月各天 + 今天各小时；进行中与已完成混合）
+--    进行中: return_time/return_mileage/rent_payable/rent_actual = NULL, deposit_return=0
+--    已完成: 全部有值
+--    日报数据基准日 2026-06-25
 -- ============================================================
+-- 已完成订单（6月内不同天归还，供月报；其中部分今天归还供日报）
 INSERT INTO busi_order (id, order_num, auto_id, customer_id, rental_time, type_id, rent, deposit, mileage, return_time, return_mileage, rent_payable, rent_actual, deposit_return, create_time, update_time, deleted) VALUES
-(1, 'YT20260620001', 2, 1, '2026-06-20 09:30:00', 1, 260, 4000, 28000, NULL, NULL, NULL, NULL, 0, NOW(), NOW(), 0),
-(2, 'YT20260618002', 4, 3, '2026-06-18 14:00:00', 2, 580, 10000,9800,  NULL, NULL, NULL, NULL, 0, NOW(), NOW(), 0),
-(3, 'YT20260615003', 9, 2, '2026-06-15 10:15:00', 1, 300, 5000, 33000, NULL, NULL, NULL, NULL, 0, NOW(), NOW(), 0),
-(4, 'YT20260601004', 1, 5, '2026-06-01 11:00:00', 3, 320, 5000, 38000, '2026-06-20 16:30:00', 42000, 4608, 4608, 1, NOW(), NOW(), 0),
-(5, 'YT20260520005', 5, 6, '2026-05-20 09:00:00', 1, 620, 12000,13200, '2026-05-25 18:00:00', 15600, 3100, 3100, 1, NOW(), NOW(), 0),
-(6, 'YT20260510006', 7, 1, '2026-05-10 13:30:00', 4, 450, 8000, 18000, '2026-05-15 12:00:00', 21000, 1687, 1687, 1, NOW(), NOW(), 0);
+(1,  'YT20260603001', 2,  1, '2026-06-03 09:20:00', 2, 240, 4000, 27500, '2026-06-10 10:00:00', 28000, 1680, 1512, 1, NOW(), NOW(), 0),
+(2,  'YT20260605002', 4,  2, '2026-06-05 14:10:00', 1, 220, 3500, 32500, '2026-06-08 16:00:00', 33000, 660,  660,  1, NOW(), NOW(), 0),
+(3,  'YT20260606003', 6,  3, '2026-06-06 11:00:00', 1, 360, 6000, 15200, '2026-06-09 12:30:00', 15600, 1080, 1080, 0, NOW(), NOW(), 0),
+(4,  'YT20260608004', 7,  5, '2026-06-08 08:30:00', 3, 420, 8000, 47000, '2026-06-12 09:00:00', 48000, 1680, 1344, 1, NOW(), NOW(), 0),
+(5,  'YT20260610005', 11, 4, '2026-06-10 15:00:00', 4, 600, 12000,11000, '2026-06-13 18:00:00', 12000, 1800, 1350, 1, NOW(), NOW(), 0),
+(6,  'YT20260612006', 13, 7, '2026-06-12 10:15:00', 1, 700, 15000,27000, '2026-06-15 11:00:00', 28000, 2100, 2100, 1, NOW(), NOW(), 0),
+(7,  'YT20260614007', 15, 6, '2026-06-14 13:40:00', 2, 280, 4000, 20500, '2026-06-21 14:00:00', 21000, 1960, 1764, 0, NOW(), NOW(), 0),
+(8,  'YT20260616008', 19, 8, '2026-06-16 09:00:00', 1, 380, 7000, 37500, '2026-06-19 10:30:00', 38000, 1140, 1140, 1, NOW(), NOW(), 0),
+(9,  'YT20260618009', 20, 9, '2026-06-18 16:20:00', 1, 200, 4000, 13500, '2026-06-20 17:00:00', 14000, 400,  400,  1, NOW(), NOW(), 0),
+(10, 'YT20260620010', 17, 10,'2026-06-20 10:00:00', 1, 480, 9000, 8500,  '2026-06-23 12:00:00', 9000,  1440, 1440, 0, NOW(), NOW(), 0),
+-- 今天（2026-06-25）归还的订单：供日报归还图 + 日报收入（不同小时）
+(11, 'YT20260622011', 9,  11,'2026-06-22 09:30:00', 1, 260, 5000, 30500, '2026-06-25 09:45:00', 31000, 780,  780,  1, NOW(), NOW(), 0),
+(12, 'YT20260622012', 18, 12,'2026-06-22 14:00:00', 1, 160, 3000, 66500, '2026-06-25 11:20:00', 67000, 480,  480,  0, NOW(), NOW(), 0),
+(13, 'YT20260623013', 8,  13,'2026-06-23 10:00:00', 2, 180, 3000, 55500, '2026-06-25 14:30:00', 56000, 540,  486,  1, NOW(), NOW(), 0),
+(14, 'YT20260624014', 16, 14,'2026-06-24 15:00:00', 1, 450, 8000, 17500, '2026-06-25 16:10:00', 18000, 900,  900,  1, NOW(), NOW(), 0),
+(15, 'YT20260624015', 1,  15,'2026-06-24 18:00:00', 4, 320, 5000, 41500, '2026-06-25 20:30:00', 42000, 640,  480,  0, NOW(), NOW(), 0);
+
+-- 今天（2026-06-25）新出租、尚未归还的订单：供日报出租图（不同小时），车辆状态=已租
+INSERT INTO busi_order (id, order_num, auto_id, customer_id, rental_time, type_id, rent, deposit, mileage, return_time, return_mileage, rent_payable, rent_actual, deposit_return, create_time, update_time, deleted) VALUES
+(16, 'YT20260625016', 3,  1, '2026-06-25 08:30:00', 1, 300, 6000, 18500, NULL, NULL, NULL, NULL, 0, NOW(), NOW(), 0),
+(17, 'YT20260625017', 5,  3, '2026-06-25 09:15:00', 2, 280, 5000, 25000, NULL, NULL, NULL, NULL, 0, NOW(), NOW(), 0),
+(18, 'YT20260625018', 10, 5, '2026-06-25 10:40:00', 1, 500, 10000,22000, NULL, NULL, NULL, NULL, 0, NOW(), NOW(), 0),
+(19, 'YT20260625019', 12, 7, '2026-06-25 13:00:00', 4, 550, 11000,19000, NULL, NULL, NULL, NULL, 0, NOW(), NOW(), 0),
+(20, 'YT20260625020', 14, 9, '2026-06-25 15:30:00', 1, 320, 5000, 32000, NULL, NULL, NULL, NULL, 0, NOW(), NOW(), 0);
+
+-- 历史已完成订单（5月，供跨月对比，不影响本月统计）
+INSERT INTO busi_order (id, order_num, auto_id, customer_id, rental_time, type_id, rent, deposit, mileage, return_time, return_mileage, rent_payable, rent_actual, deposit_return, create_time, update_time, deleted) VALUES
+(21, 'YT20260510021', 7,  2, '2026-05-10 09:00:00', 3, 420, 8000, 45000, '2026-05-14 10:00:00', 46500, 1680, 1344, 1, NOW(), NOW(), 0),
+(22, 'YT20260515022', 8,  4, '2026-05-15 11:30:00', 1, 180, 3000, 54000, '2026-05-18 12:00:00', 55500, 540,  540,  1, NOW(), NOW(), 0),
+(23, 'YT20260520023', 18, 6, '2026-05-20 14:00:00', 2, 160, 3000, 65000, '2026-05-27 15:00:00', 66500, 1120, 1008, 1, NOW(), NOW(), 0);
 
 -- ============================================================
--- 13. 保养 busi_maintain
+-- 7. 保养记录（12）
 -- ============================================================
-INSERT INTO busi_maintain (id, auto_id, maintain_time, location, item, cost, create_time, update_time, deleted) VALUES
-(1, 6, '2026-06-22', '宇通自营维保中心', '三电系统检测 + 常规保养',        880,  NOW(), NOW(), 0),
-(2, 1, '2026-06-21', '上海大众4S店浦东店', '更换机油机滤 + 四轮换位',        650,  NOW(), NOW(), 0),
-(3, 5, '2026-05-26', '奔驰授权服务中心',   '首保 + 刹车系统检查',            1200, NOW(), NOW(), 0),
-(4, 8, '2026-05-15', '宇通自营维保中心',   '更换正时皮带 + 火花塞',          1500, NOW(), NOW(), 0),
-(5, 3, '2026-04-18', '广汽丰田4S店',       '常规保养：机油机滤',             480,  NOW(), NOW(), 0);
+INSERT INTO busi_maintain (id, auto_id, auto_num, maintain_time, location, item, cost, create_time, update_time, deleted) VALUES
+(1,  6,  '沪A8K236', '2026-06-22', '宇通自营维保中心',     '三电系统检测 + 常规保养',   880,  NOW(), NOW(), 0),
+(2,  1,  '沪A8K231', '2026-06-18', '上海大众4S店浦东店',   '更换机油机滤 + 四轮换位',   650,  NOW(), NOW(), 0),
+(3,  18, '沪A8K248', '2026-06-15', '宇通自营维保中心',     '更换正时皮带 + 火花塞',     1500, NOW(), NOW(), 0),
+(4,  8,  '沪A8K238', '2026-06-10', '日产授权服务中心',     '常规保养 + 空调清洗',       720,  NOW(), NOW(), 0),
+(5,  7,  '沪A8K237', '2026-06-05', '广汽丰田4S店',         '更换刹车片 + 刹车油',       980,  NOW(), NOW(), 0),
+(6,  13, '沪A8K243', '2026-05-28', '奔驰授权服务中心',     '首保 + 全车检查',           1200, NOW(), NOW(), 0),
+(7,  10, '沪A8K240', '2026-05-20', '宝马授权服务中心',     '机油机滤 + 制动检查',       1100, NOW(), NOW(), 0),
+(8,  5,  '沪A8K235', '2026-05-12', '别克4S店',             '常规保养',                 560,  NOW(), NOW(), 0),
+(9,  9,  '沪A8K239', '2026-04-30', '日产授权服务中心',     '更换轮胎两条',             1600, NOW(), NOW(), 0),
+(10, 2,  '沪A8K232', '2026-04-22', '上海大众4S店徐汇店',   '常规保养：机油机滤',         480,  NOW(), NOW(), 0),
+(11, 14, '沪A8K244', '2026-04-15', '比亚迪服务中心',       '电池检测 + 软件升级',       600,  NOW(), NOW(), 0),
+(12, 16, '沪A8K246', '2026-04-08', '特斯拉服务中心',       '常规检测 + 轮胎换位',       500,  NOW(), NOW(), 0);
 
 -- ============================================================
--- 14. 违章 busi_violation
---     status:0未处理 1已处理
+-- 8. 违章记录（12）  status:0未处理1已处理（auto_num 冗余车牌）
 -- ============================================================
-INSERT INTO busi_violation (id, auto_id, violation_time, reason, location, deduct_points, fine, status, create_time, update_time, deleted) VALUES
-(1, 1, '2026-06-10 08:25:00', '违反禁止标线指示',   '上海市浦东新区世纪大道', 3, 200, 1, NOW(), NOW(), 0),
-(2, 5, '2026-05-22 19:40:00', '机动车超速20%以下',  'G15沈海高速上海段',     3, 200, 1, NOW(), NOW(), 0),
-(3, 7, '2026-05-12 12:10:00', '违法停车',           '上海市黄浦区南京东路',   0, 200, 1, NOW(), NOW(), 0),
-(4, 2, '2026-06-21 17:55:00', '闯红灯',             '上海市浦东新区张杨路',   6, 200, 0, NOW(), NOW(), 0),
-(5, 4, '2026-06-19 09:15:00', '违反禁止标线指示',   '上海市徐汇区漕溪北路',   3, 200, 0, NOW(), NOW(), 0);
+INSERT INTO busi_violation (id, auto_id, auto_num, violation_time, reason, location, deduct_points, fine, status, create_time, update_time, deleted) VALUES
+(1,  1,  '沪A8K231', '2026-06-08 08:25:00', '违反禁止标线指示',   '上海市浦东新区世纪大道', 3, 200, 1, NOW(), NOW(), 0),
+(2,  7,  '沪A8K237', '2026-06-09 19:40:00', '机动车超速20%以下',  'G15沈海高速上海段',     3, 200, 1, NOW(), NOW(), 0),
+(3,  11, '沪A8K241', '2026-06-11 12:10:00', '违法停车',           '上海市黄浦区南京东路',   0, 200, 1, NOW(), NOW(), 0),
+(4,  13, '沪A8K243', '2026-06-13 17:55:00', '闯红灯',             '上海市浦东新区张杨路',   6, 200, 0, NOW(), NOW(), 0),
+(5,  15, '沪A8K245', '2026-06-15 09:15:00', '违反禁止标线指示',   '上海市徐汇区漕溪北路',   3, 200, 0, NOW(), NOW(), 0),
+(6,  9,  '沪A8K239', '2026-06-19 14:20:00', '未按规定车道行驶',   '上海市静安区延安中路',   2, 100, 1, NOW(), NOW(), 0),
+(7,  20, '沪A8K250', '2026-06-19 21:00:00', '夜间不按规定使用灯光','上海市长宁区中山公园',   1, 100, 0, NOW(), NOW(), 0),
+(8,  17, '沪A8K247', '2026-06-21 10:30:00', '机动车超速50%以上',  'S20外环高速',           12,1000,0, NOW(), NOW(), 0),
+(9,  8,  '沪A8K238', '2026-05-16 08:00:00', '违法停车',           '上海市虹口区四川北路',   0, 200, 1, NOW(), NOW(), 0),
+(10, 18, '沪A8K248', '2026-05-22 18:30:00', '闯红灯',             '上海市杨浦区四平路',     6, 200, 1, NOW(), NOW(), 0),
+(11, 5,  '沪A8K235', '2026-06-23 16:45:00', '违反禁止标线指示',   '上海市闵行区莘庄',       3, 200, 0, NOW(), NOW(), 0),
+(12, 10, '沪A8K240', '2026-06-24 11:20:00', '机动车超速20%以下',  'G2京沪高速',            3, 200, 0, NOW(), NOW(), 0);

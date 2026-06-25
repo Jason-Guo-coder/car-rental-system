@@ -24,7 +24,8 @@ public class CustomerController {
 
     @PostMapping
     public Result save(@RequestBody Customer customer) {
-        return customerService.save(customer) ? Result.success() : Result.fail();
+        // 保存成功后回填主键，返回新客户id（出租流程需用作 customerId）
+        return customerService.save(customer) ? Result.success(customer.getId()) : Result.fail();
     }
     @PutMapping
     public Result update(@RequestBody Customer customer) {
@@ -39,5 +40,11 @@ public class CustomerController {
     public Result search(@PathVariable int start, @PathVariable int size, @RequestBody Customer customer){
         Page<Customer> page = new Page<>(start, size);
         return Result.success(customerService.searchByPage(page, customer));
+    }
+
+    // 按联系电话查询客户（出租时回填老客户）
+    @PostMapping("/tel")
+    public Result selectCustomerByTel(@RequestBody Customer customer){
+        return Result.success(customerService.selectCustomerByTel(customer.getTel()));
     }
 }
