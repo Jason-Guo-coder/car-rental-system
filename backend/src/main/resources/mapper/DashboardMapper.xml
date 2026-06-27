@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gjq.mapper.DashboardMapper">
+
+    <select id="countFleetTotal" resultType="java.lang.Integer">
+        select count(id)
+        from auto_info
+        where deleted = 0
+    </select>
+
+    <select id="countFleetStatus" resultType="java.lang.Integer">
+        select count(id)
+        from auto_info
+        where deleted = 0
+          and status = #{status}
+    </select>
+
+    <select id="countMonthOrder" resultType="java.lang.Integer">
+        select count(id)
+        from busi_order
+        where deleted = 0
+          and month(rental_time) = month(now())
+          and year(rental_time) = year(now())
+    </select>
+
+    <select id="countPendingViolation" resultType="java.lang.Integer">
+        select count(id)
+        from busi_violation
+        where deleted = 0
+          and status = 0
+    </select>
+
+    <select id="sumMonthRentActual" resultType="java.lang.Integer">
+        select ifnull(sum(rent_actual), 0)
+        from busi_order
+        where deleted = 0
+          and month(return_time) = month(now())
+          and year(return_time) = year(now())
+    </select>
+
+    <select id="sumMonthRentPayable" resultType="java.lang.Integer">
+        select ifnull(sum(rent_payable), 0)
+        from busi_order
+        where deleted = 0
+          and month(return_time) = month(now())
+          and year(return_time) = year(now())
+    </select>
+
+    <select id="sumMonthDeposit" resultType="java.lang.Integer">
+        select ifnull(sum(deposit), 0)
+        from busi_order
+        where deleted = 0
+          and month(return_time) = month(now())
+          and year(return_time) = year(now())
+    </select>
+
+    <select id="selectWeeklyRevenue" resultType="com.gjq.vo.dashboardVO.DashboardOverviewVO$DashboardRevenueVO">
+        select date_format(return_time, '%m-%d') day,
+               round(ifnull(sum(rent_actual), 0) / 1000, 1) value
+        from busi_order
+        where deleted = 0
+          and return_time is not null
+          and date(return_time) &gt;= date_sub(curdate(), interval 6 day)
+        group by date(return_time), date_format(return_time, '%m-%d')
+        order by date(return_time)
+    </select>
+
+    <select id="selectActiveLease" resultType="com.gjq.vo.dashboardVO.DashboardOverviewVO$DashboardLeaseVO">
+        select a.auto_num plate,
+               t.type_name model,
+               c.name customer,
+               date_format(o.rental_time, '%c-%d') start,
+               '-' end,
+               30 progress
+        from busi_order o,
+             auto_info a,
+             busi_customer c,
+             busi_rental_type t
+        where o.auto_id = a.id
+          and o.customer_id = c.id
+          and o.type_id = t.id
+          and o.deleted = 0
+          and a.deleted = 0
+          and c.deleted = 0
+          and t.deleted = 0
+          and o.return_time is null
+        order by o.rental_time desc
+        limit 4
+    </select>
+
+    <select id="selectTodo" resultType="com.gjq.vo.dashboardVO.DashboardOverviewVO$DashboardTodoVO">
+        select '违章待处理' title,
+               concat(auto_num, ' ', reason, ' 罚款¥', fine) `desc`,
+               '待处理' tag,
+               'danger' tone
+        from busi_violation
+        where deleted = 0
+          and status = 0
+        order by violation_time desc
+        limit 5
+    </select>
+
+    <select id="selectMonthOrderNum" resultType="com.gjq.vo.dashboardVO.DashboardOverviewVO$DashboardOrderNumVO">
+        select day(date(rental_time)) days,
+               count(id) rentalNum
+        from busi_order
+        where deleted = 0
+          and month(rental_time) = month(now())
+          and year(rental_time) = year(now())
+        group by 1
+        order by 1
+    </select>
+</mapper>

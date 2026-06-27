@@ -18,12 +18,12 @@
 
     </select>
     <select id="sumRentPay" resultType="com.gjq.vo.financeVO.FinanceCostVO">
-        select sum(rent_payable) countRentPayable ,
-               sum(rent_actual) countRentActual from busi_order
+        select coalesce(sum(rent_payable), 0) countRentPayable ,
+               coalesce(sum(rent_actual), 0) countRentActual from busi_order
         where date(return_time)=date(now())
     </select>
     <select id="sumDeposit" resultType="java.lang.Integer">
-        select sum(deposit) from busi_order
+        select coalesce(sum(deposit), 0) from busi_order
         where date(return_time)=date(now())
     </select>
     <select id="countMonthRental" resultType="com.gjq.vo.financeVO.FinanceNumMonthVO">
@@ -42,12 +42,12 @@
         order by 1
     </select>
     <select id="sumRentPayMonth" resultType="com.gjq.vo.financeVO.FinanceCostVO">
-        select sum(rent_payable) countRentPayable ,
-               sum(rent_actual) countRentActual from busi_order
+        select coalesce(sum(rent_payable), 0) countRentPayable ,
+               coalesce(sum(rent_actual), 0) countRentActual from busi_order
         where month(return_time)=month(now())
     </select>
     <select id="sumDepositMonth" resultType="java.lang.Integer">
-        select sum(deposit) from busi_order
+        select coalesce(sum(deposit), 0) from busi_order
         where month(return_time)=month(now())
     </select>
 </mapper>

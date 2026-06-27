@@ -1,0 +1,189 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-start: #3b83f5;
+  --brand-end: #7368f2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  color: #1f2330;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============ 玻璃拟态可复用组件类 ============ */
+@layer components {
+  /* 白玻璃卡：半透明白 + 大圆角 + 柔阴影 */
+  .glass-card {
+    @apply rounded-card bg-white/95 shadow-glass;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  /* 液态玻璃：半透明 + 背景模糊 + 顶部内高光 */
+  .liquid-glass {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow:
+      0 8px 32px rgba(60, 70, 130, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+
+  /* 蓝紫渐变按钮 */
+  .btn-brand {
+    @apply rounded-field bg-brand-gradient font-medium text-white transition-all;
+    box-shadow: 0 4px 14px rgba(91, 110, 240, 0.35);
+  }
+  .btn-brand:hover {
+    filter: brightness(1.05);
+    box-shadow: 0 6px 18px rgba(91, 110, 240, 0.45);
+  }
+
+  /* 白底次级按钮 */
+  .btn-ghost {
+    @apply rounded-field border border-black/10 bg-white/80 font-medium text-ink-soft transition-all;
+  }
+  .btn-ghost:hover {
+    @apply bg-white;
+  }
+
+  /* 搜索/输入框：白底 + 描边 + 柔阴影 */
+  .glass-field {
+    @apply rounded-field border border-black/[0.08] bg-white/95 text-ink shadow-field;
+  }
+
+  /* 表头灰字 */
+  .table-th {
+    @apply text-xs font-medium text-ink-label;
+  }
+
+  /* 圆点状态徽章基础 */
+  .badge-dot {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+}
+
+/* ============ Element Plus 变量覆盖：贴合玻璃拟态 ============ */
+:root {
+  --el-color-primary: #3b83f5;
+  --el-color-primary-light-3: #6fa3f8;
+  --el-color-primary-light-5: #9dbffb;
+  --el-color-primary-light-7: #c9defd;
+  --el-color-primary-light-8: #dceafe;
+  --el-color-primary-light-9: #eef5ff;
+  --el-color-primary-dark-2: #2f6ad6;
+  --el-border-radius-base: 12px;
+  --el-font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+}
+
+/* 抽屉/弹窗玻璃化 */
+.el-drawer,
+.el-dialog {
+  border-radius: 18px 0 0 18px;
+  background: rgba(255, 255, 255, 0.97) !important;
+  backdrop-filter: blur(20px);
+}
+.el-dialog {
+  border-radius: 20px;
+}
+
+/* 表格透明化，融入玻璃卡 */
+.glass-table.el-table {
+  --el-table-border-color: rgba(0, 0, 0, 0.05);
+  --el-table-header-bg-color: transparent;
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-row-hover-bg-color: rgba(91, 110, 240, 0.05);
+  background: transparent;
+}
+.glass-table.el-table th.el-table__cell {
+  background: transparent;
+  color: #8c909e;
+  font-weight: 500;
+  font-size: 12px;
+}
+.glass-table.el-table th.el-table__cell,
+.glass-table.el-table td.el-table__cell {
+  text-align: center;
+}
+.glass-table.el-table th.el-table__cell:first-child,
+.glass-table.el-table td.el-table__cell:first-child,
+.glass-table.has-check.el-table th.el-table__cell:nth-child(2),
+.glass-table.has-check.el-table td.el-table__cell:nth-child(2) {
+  text-align: left;
+}
+.glass-table.el-table td.el-table__cell:not(:first-child) .cell > .flex,
+.glass-table.has-check.el-table td.el-table__cell:nth-child(2) ~ td .cell > .flex {
+  justify-content: center;
+}
+.glass-table.has-check.el-table td.el-table__cell:nth-child(2) .cell > .flex {
+  justify-content: flex-start;
+}
+.glass-table.el-table::before {
+  display: none;
+}
+
+/* iOS 风交替列浅底：奇数数据列加极浅品牌色，列与列分块，便于大数据量横向阅读 */
+.glass-table.el-table tbody td.el-table__cell:nth-child(odd) {
+  background: rgba(91, 110, 240, 0.045);
+}
+/* 表头同步竖向分块，与 body 列对齐 */
+.glass-table.el-table thead th.el-table__cell:nth-child(odd) {
+  background: rgba(91, 110, 240, 0.03);
+}
+/* 列底色分块的左右圆角：让每行的染色列呈胶囊分段感 */
+.glass-table.el-table tbody tr td.el-table__cell:first-child {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+/* 选择模式：首列是勾选框列，需排除染色，并把奇偶整体翻转，使数据列染色与平时一致 */
+.glass-table.has-check.el-table tbody td.el-table__cell:nth-child(odd),
+.glass-table.has-check.el-table thead th.el-table__cell:nth-child(odd) {
+  background: transparent;
+}
+.glass-table.has-check.el-table tbody td.el-table__cell:nth-child(even) {
+  background: rgba(91, 110, 240, 0.045);
+}
+.glass-table.has-check.el-table thead th.el-table__cell:nth-child(even) {
+  background: rgba(91, 110, 240, 0.03);
+}
+/* 勾选框列本身（第 1 列）保持透明无圆角 */
+.glass-table.has-check.el-table tbody td.el-table__cell:first-child {
+  background: transparent;
+  border-radius: 0;
+}
+/* 染色锚点圆角移到第 2 列（车辆列） */
+.glass-table.has-check.el-table tbody tr td.el-table__cell:nth-child(2) {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(115, 104, 242, 0.25);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}

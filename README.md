@@ -58,6 +58,16 @@ car-rental-system/
 
 ## 快速开始
 
+### 一键启动新前端 + 后端 + Redis
+
+已提供双击脚本：
+
+```bash
+./start-cloudrent.command
+```
+
+脚本会启动 `frontend-temp`，并优先复用已运行的 `8888` 后端和 `6379` Redis；如果它们未运行，才由脚本启动。默认前端地址是 `http://localhost:5180/`，如端口被占用会自动使用下一个可用端口。关闭窗口或按 `Ctrl+C` 时，会停止本脚本启动的进程，并保留原本已运行的后端/Redis。启动前仍需本机 MySQL 已运行，且已准备好 `car_rental_system` 数据库。
+
 ### 1. 数据库准备
 
 创建数据库并导入数据：

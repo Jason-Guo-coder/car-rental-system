@@ -1,15 +1,13 @@
 package com.gjq.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.gjq.vo.financeVO.FinanceCostVO;
 import com.gjq.vo.financeVO.FinanceNumDayVO;
 import com.gjq.vo.financeVO.FinanceNumMonthVO;
-import org.apache.poi.ss.formula.functions.Finance;
 
 import java.util.List;
 
 
-public interface FinanceMapper extends BaseMapper<Finance> {
+public interface FinanceMapper {
 
     List<FinanceNumDayVO> countDayRental();
 
