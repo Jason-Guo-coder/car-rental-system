@@ -3,7 +3,7 @@
 set -u
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-FRONTEND_DIR="$ROOT_DIR/frontend-temp"
+FRONTEND_DIR="$ROOT_DIR/frontend"
 BACKEND_DIR="$ROOT_DIR/backend"
 RUNTIME_DIR="$ROOT_DIR/.runtime/cloudrent"
 REDIS_DIR="$RUNTIME_DIR/redis"
@@ -266,7 +266,7 @@ trap cleanup EXIT
 trap cleanup_and_exit INT TERM HUP
 
 if [ ! -d "$FRONTEND_DIR" ]; then
-  fail "frontend-temp directory not found"
+  fail "frontend directory not found"
   pause_before_exit
   exit 1
 fi
@@ -287,8 +287,8 @@ require_command mvn "Install Maven first."
 require_command npm "Install Node.js/npm first."
 
 if [ ! -d "$FRONTEND_DIR/node_modules" ]; then
-  fail "frontend-temp/node_modules not found"
-  echo "  Run npm install in frontend-temp once, then try again."
+  fail "frontend/node_modules not found"
+  echo "  Run npm install in frontend once, then try again."
   pause_before_exit
   exit 1
 fi

@@ -11,7 +11,7 @@
 | 端 | 技术 |
 |---|---|
 | 后端 | Spring Boot 3.0.10 · JDK 17 · MyBatis-Plus 3.5.5 · Spring Security + JWT · MySQL 8 · Redis · 阿里云 OSS · EasyExcel · Spring Mail |
-| 前端 | Vue 2.6 · Element UI 2.13 · Vue Router 3 · Vuex 3 · ECharts 4 · Axios（基于 vue-element-admin） |
+| 前端 | Vue 3.4 · Vite 5 · TypeScript · Element Plus · Pinia · ECharts 5 · Axios |
 
 ---
 
@@ -31,14 +31,14 @@ car-rental-system/
 │       └── resources/
 │           ├── application.yml    # 主配置（敏感信息走环境变量）
 │           └── mapper/            # Mapper XML
-├── frontend/                      # Vue 前端
+├── frontend/                      # Vue 新前端
 │   └── src/
 │       ├── api/                   # 接口请求封装
 │       ├── views/                 # 业务页面（system/auto/busi/finance）
-│       ├── router/ store/         # 路由与状态
-│       └── utils/request.js       # Axios 封装
+│       ├── router/ stores/        # 路由与状态
+│       └── api/http.ts            # Axios 封装
 ├── database/
-│   └── init_data.sql              # 业务数据初始化脚本
+│   └── car_rental_system.sql      # 全量演示数据库脚本
 └── doc/                           # 项目文档（PRD、README）
 ```
 
@@ -50,7 +50,7 @@ car-rental-system/
 - Maven 3.6+
 - MySQL 8.x（数据库名 `car_rental_system`）
 - Redis 6+
-- Node.js 14~16（适配 Vue CLI 4）
+- Node.js 18+（适配 Vite 5）
 - 阿里云 OSS 账号（图片上传，可选）
 - 支持 SMTP 的邮箱（定时上报，可选）
 
@@ -66,7 +66,7 @@ car-rental-system/
 ./start-cloudrent.command
 ```
 
-脚本会启动 `frontend-temp`，并优先复用已运行的 `8888` 后端和 `6379` Redis；如果它们未运行，才由脚本启动。默认前端地址是 `http://localhost:5180/`，如端口被占用会自动使用下一个可用端口。关闭窗口或按 `Ctrl+C` 时，会停止本脚本启动的进程，并保留原本已运行的后端/Redis。启动前仍需本机 MySQL 已运行，且已准备好 `car_rental_system` 数据库。
+脚本会启动 `frontend`，并优先复用已运行的 `8888` 后端和 `6379` Redis；如果它们未运行，才由脚本启动。默认前端地址是 `http://localhost:5180/`，如端口被占用会自动使用下一个可用端口。关闭窗口或按 `Ctrl+C` 时，会停止本脚本启动的进程，并保留原本已运行的后端/Redis。启动前仍需本机 MySQL 已运行，且已准备好 `car_rental_system` 数据库。
 
 ### 1. 数据库准备
 
@@ -77,10 +77,10 @@ CREATE DATABASE car_rental_system DEFAULT CHARACTER SET utf8mb4;
 ```
 
 ```bash
-mysql -uroot -p car_rental_system < database/init_data.sql
+mysql -uroot -p car_rental_system < database/car_rental_system.sql
 ```
 
-> `init_data.sql` 初始化 8 张业务表（厂商/品牌/车辆/出租类型/客户/订单/保养/违章）的演示数据。权限体系表（用户/角色/部门/菜单）需另行准备或沿用现有库。
+> `car_rental_system.sql` 保留表结构并重置演示数据，覆盖权限、车辆、客户、订单、保养、违章、财务统计等主要演示场景。
 
 ### 2. 启动 Redis
 
@@ -116,7 +116,7 @@ npm install
 npm run dev
 ```
 
-前端默认端口 **9527**，浏览器访问 `http://localhost:9527`。
+前端默认端口 **5180**，浏览器访问 `http://localhost:5180`。
 
 ---
 
@@ -154,7 +154,7 @@ npm run dev
 cd backend && mvn clean package
 
 # 前端打生产包
-cd frontend && npm run build:prod
+cd frontend && npm run build
 ```
 
 ---

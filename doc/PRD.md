@@ -110,7 +110,7 @@
 前后端分离，前端 SPA 通过 RESTful API 与后端交互；后端无状态，JWT + Redis 管理会话。
 
 ```
-浏览器(Vue SPA :9527)  ──HTTP/JSON──>  Spring Boot(:8888)  ──>  MySQL 8 / Redis / 阿里云 OSS
+浏览器(Vue SPA :5180)  ──HTTP/JSON──>  Spring Boot(:8888)  ──>  MySQL 8 / Redis / 阿里云 OSS
         │                                      │
    动态路由菜单                          Spring Security + JWT 鉴权
 ```
