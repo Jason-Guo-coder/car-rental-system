@@ -142,7 +142,7 @@ npm run dev
 ## 安全说明
 
 - 所有密钥、密码均通过**环境变量**注入，请勿硬编码进 `application.yml` 或提交到仓库。
-- `.idea/` 已在 `.gitignore` 中，本地运行配置中的密钥不会进入版本库。
+- 本地运行配置、IDE 配置、缓存目录和构建产物不要提交到版本库。
 - 建议定期轮换 OSS AccessKey 与邮箱授权码。
 
 ---
@@ -165,3 +165,29 @@ cd frontend && npm run build
 - **财务图表无数据**：日报/月报按系统当天/当月统计，需保证订单的出租/归还时间落在统计区间内。
 - **菜单变更后不生效**：菜单登录时一次性下发，修改后需**退出重新登录**。
 - **图片上传失败**：检查 OSS 环境变量与 bucket 配置。
+- **如何用命令行查看 Redis 中的 token**：
+
+  后端登录成功后会把 token 以 `token:具体token值` 的形式写入 Redis。默认 Redis 端口是 `6379`；如果启动脚本里改了 `REDIS_PORT`，把下面命令里的端口换成实际端口。
+
+  ```bash
+  redis-cli -h 127.0.0.1 -p 6379
+  ```
+
+  进入 Redis CLI 后查看所有 token key：
+
+  ```redis
+  keys token:*
+  ```
+
+  查看某个 token 的值和剩余过期时间：
+
+  ```redis
+  get "token:这里粘贴完整token"
+  ttl "token:这里粘贴完整token"
+  ```
+
+  也可以一行直接查看：
+
+  ```bash
+  redis-cli -h 127.0.0.1 -p 6379 keys 'token:*'
+  ```
